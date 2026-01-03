@@ -1,6 +1,9 @@
 import Vapor
 
 public func configure(_ app: Application) async throws {
+    // リクエストボディサイズ制限 (50MB - 写真アップロード用)
+    app.routes.defaultMaxBodySize = "50mb"
+
     // ストレージ設定
     let basePath = StorageConfig.defaultBasePath()
     let config = StorageConfig(basePath: basePath)
