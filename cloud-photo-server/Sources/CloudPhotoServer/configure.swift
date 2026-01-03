@@ -6,6 +6,10 @@ public func configure(_ app: Application) async throws {
     let config = StorageConfig(basePath: basePath)
     app.storageConfig = config
 
+    // 画像処理サービス初期化
+    let imageProcessor = CoreGraphicsImageProcessor(thumbnailMaxSize: 300)
+    app.imageProcessingService = imageProcessor
+
     // メタデータストア初期化
     let metadataStore = JSONMetadataStore(filePath: config.metadataPath)
     app.metadataStore = metadataStore
@@ -13,7 +17,9 @@ public func configure(_ app: Application) async throws {
     // 写真ストレージサービス初期化
     let photoService = LocalPhotoStorageService(
         basePath: config.photosPath,
-        metadataStore: metadataStore
+        thumbnailsPath: config.thumbnailsPath,
+        metadataStore: metadataStore,
+        imageProcessor: imageProcessor
     )
     app.photoStorageService = photoService
 
