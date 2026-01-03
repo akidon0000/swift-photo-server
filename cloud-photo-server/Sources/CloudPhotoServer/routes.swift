@@ -1,11 +1,9 @@
 import Vapor
 
 func routes(_ app: Application) throws {
-    app.get { req async in
-        "It works!"
-    }
+    // Photo API
+    try app.register(collection: PhotoController())
 
-    app.get("hello") { req async -> String in
-        "Hello, world!"
-    }
+    // Health API
+    try app.register(collection: HealthController())
 }

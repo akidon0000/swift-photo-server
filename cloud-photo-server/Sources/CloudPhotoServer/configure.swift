@@ -1,10 +1,43 @@
 import Vapor
 
-// configures your application
 public func configure(_ app: Application) async throws {
-    // uncomment to serve files from /Public folder
-    // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    // ストレージ設定
+    let basePath = StorageConfig.defaultBasePath()
+    let config = StorageConfig(basePath: basePath)
+    app.storageConfig = config
 
-    // register routes
+    // メタデータストア初期化
+    let metadataStore = JSONMetadataStore(filePath: config.metadataPath)
+    app.metadataStore = metadataStore
+
+    // 写真ストレージサービス初期化
+    let photoService = LocalPhotoStorageService(
+        basePath: config.photosPath,
+        metadataStore: metadataStore
+    )
+    app.photoStorageService = photoService
+
+    // ストレージディレクトリ作成
+    try ensureStorageDirectories(config: config)
+
+    // ルート登録
     try routes(app)
+
+    app.logger.info("Storage configured at: \(basePath)")
+}
+
+/// ストレージディレクトリの存在を確認し、なければ作成
+private func ensureStorageDirectories(config: StorageConfig) throws {
+    let fm = FileManager.default
+    let directories = [
+        config.basePath,
+        config.photosPath,
+        config.thumbnailsPath
+    ]
+
+    for dir in directories {
+        if !fm.fileExists(atPath: dir) {
+            try fm.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        }
+    }
 }
