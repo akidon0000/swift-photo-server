@@ -27,7 +27,7 @@ struct StorageConfig: Sendable {
         #else
         // macOS では Application Support を使用
         let home = FileManager.default.homeDirectoryForCurrentUser.path
-        return "\(home)/Library/Application Support/CloudPhotoServer"
+        return "\(home)/Library/Application Support/HomePhotoServer"
         #endif
     }
 }

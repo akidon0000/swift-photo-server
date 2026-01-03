@@ -1,10 +1,10 @@
-@testable import CloudPhotoServer
+@testable import HomePhotoServer
 import VaporTesting
 import Testing
 import Foundation
 
 @Suite("App Tests")
-struct CloudPhotoServerTests {
+struct HomePhotoServerTests {
     @Test("Test Health Check Route")
     func healthCheck() async throws {
         try await withApp(configure: configure) { app in

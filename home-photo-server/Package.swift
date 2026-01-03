@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "CloudPhotoServer",
+    name: "HomePhotoServer",
     platforms: [
        .macOS(.v13)
     ],
@@ -16,7 +16,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "CloudPhotoServer",
+            name: "HomePhotoServer",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "NIOCore", package: "swift-nio"),
@@ -26,9 +26,9 @@ let package = Package(
             swiftSettings: swiftSettings
         ),
         .testTarget(
-            name: "CloudPhotoServerTests",
+            name: "HomePhotoServerTests",
             dependencies: [
-                .target(name: "CloudPhotoServer"),
+                .target(name: "HomePhotoServer"),
                 .product(name: "VaporTesting", package: "vapor"),
             ],
             swiftSettings: swiftSettings
