@@ -1,3 +1,5 @@
+import Fluent
+import FluentPostgresDriver
 import Vapor
 
 public func configure(_ app: Application) async throws {
@@ -17,8 +19,40 @@ public func configure(_ app: Application) async throws {
     #endif
     app.imageProcessingService = imageProcessor
 
-    // メタデータストア初期化
-    let metadataStore = JSONMetadataStore(filePath: config.metadataPath)
+    // メタデータストア初期化 (環境に応じて切り替え)
+    let metadataStore: any MetadataStore
+
+    if let dbConfig = DatabaseConfig.fromEnvironment() {
+        // PostgreSQL 設定
+        app.databases.use(
+            .postgres(
+                configuration: .init(
+                    hostname: dbConfig.hostname,
+                    port: dbConfig.port,
+                    username: dbConfig.username,
+                    password: dbConfig.password,
+                    database: dbConfig.database,
+                    tls: .prefer(try .init(configuration: .clientDefault))
+                )
+            ),
+            as: .psql
+        )
+
+        // マイグレーション登録
+        app.migrations.add(CreatePhotoMetadata())
+        app.migrations.add(CreateExifData())
+
+        // マイグレーション実行
+        try await app.autoMigrate()
+
+        metadataStore = FluentMetadataStore(database: app.db)
+        app.logger.info("Using PostgreSQL metadata store")
+    } else {
+        // JSON ストアにフォールバック
+        metadataStore = JSONMetadataStore(filePath: config.metadataPath)
+        app.logger.info("Using JSON file metadata store (DATABASE_* env not set)")
+    }
+
     app.metadataStore = metadataStore
 
     // 写真ストレージサービス初期化

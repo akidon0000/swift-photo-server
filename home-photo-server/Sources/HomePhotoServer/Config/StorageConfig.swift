@@ -17,6 +17,7 @@ struct StorageConfig: Sendable {
 
     /// デフォルトのストレージパスを取得
     static func defaultBasePath() -> String {
+        // env が存在すればそのパスを使用
         if let customPath = Environment.get("PHOTO_STORAGE_PATH") {
             return customPath
         }
