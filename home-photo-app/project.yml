@@ -1,0 +1,70 @@
+name: HomePhotoApp
+options:
+  bundleIdPrefix: com.homephoto
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  HomePhotoApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: HomePhotoApp
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        INFOPLIST_FILE: HomePhotoApp/Resources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.homephoto.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+    info:
+      path: HomePhotoApp/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: HomePhoto
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundlePackageType: APPL
+        CFBundleExecutable: $(EXECUTABLE_NAME)
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes:
+          - fetch
+          - processing
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.homephoto.sync
+        NSPhotoLibraryUsageDescription: "写真をバックアップするためにフォトライブラリへのアクセスが必要です。"
+        NSLocalNetworkUsageDescription: "ローカルネットワーク上のサーバーに接続するために必要です。"
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+
+  HomePhotoAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: HomePhotoAppTests
+    dependencies:
+      - target: HomePhotoApp
+    settings:
+      base:
+        INFOPLIST_FILE: HomePhotoAppTests/Info.plist
