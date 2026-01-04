@@ -3,8 +3,7 @@ import Vapor
 /// ヘルスチェック API コントローラー
 struct HealthController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
-        let health = routes.grouped("api", "v1")
-        health.get("health", use: check)
+        routes.get("health", use: check)
     }
 
     /// GET /api/v1/health - ヘルスチェック

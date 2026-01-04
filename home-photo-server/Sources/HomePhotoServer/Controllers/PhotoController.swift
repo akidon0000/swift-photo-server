@@ -3,7 +3,7 @@ import Vapor
 /// 写真 API コントローラー
 struct PhotoController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
-        let photos = routes.grouped("api", "v1", "photos")
+        let photos = routes.grouped("photos")
 
         // 読み取り
         photos.get(use: list)
@@ -16,7 +16,17 @@ struct PhotoController: RouteCollection {
         photos.delete(":id", use: delete)
     }
 
-    /// GET /api/v1/photos - 写真一覧取得
+    /// 写真一覧取得
+    ///
+    /// - Endpoint: `GET /api/v1/photos`
+    /// - Query Parameters:
+    ///   - `page`: ページ番号 (デフォルト: 1)
+    ///   - `perPage`: 1ページあたりの件数 (デフォルト: 20, 最大: 100)
+    ///   - `sortBy`: ソート項目 (`createdAt` | `takenAt`, デフォルト: `createdAt`)
+    ///   - `order`: ソート順 (`asc` | `desc`, デフォルト: `desc`)
+    ///   - `year`: 年でフィルタ (例: 2025)
+    ///   - `month`: 月でフィルタ (例: 1-12)
+    /// - Response: `PaginatedResponse<Photo>` (200 OK)
     @Sendable
     func list(req: Request) async throws -> PaginatedResponse<Photo> {
         let query = try req.query.decode(PhotoListQuery.self)
@@ -40,7 +50,15 @@ struct PhotoController: RouteCollection {
         return PaginatedResponse(data: photos, pagination: pagination)
     }
 
-    /// GET /api/v1/photos/:id - 写真詳細取得
+    /// 写真詳細取得
+    ///
+    /// - Endpoint: `GET /api/v1/photos/:id`
+    /// - Path Parameters:
+    ///   - `id`: 写真の UUID
+    /// - Response: `Photo` (200 OK)
+    /// - Errors:
+    ///   - 400 Bad Request: 無効な UUID 形式
+    ///   - 404 Not Found: 写真が存在しない
     @Sendable
     func get(req: Request) async throws -> Photo {
         guard let idString = req.parameters.get("id"),
@@ -51,7 +69,19 @@ struct PhotoController: RouteCollection {
         return try await req.photoStorageService.getPhoto(id: id)
     }
 
-    /// GET /api/v1/photos/:id/download - 写真ダウンロード
+    /// 写真ダウンロード
+    ///
+    /// - Endpoint: `GET /api/v1/photos/:id/download`
+    /// - Path Parameters:
+    ///   - `id`: 写真の UUID
+    /// - Response: オリジナル画像ファイル (200 OK)
+    /// - Response Headers:
+    ///   - `Content-Disposition`: `attachment; filename="..."`
+    ///   - `ETag`: チェックサム
+    ///   - `Cache-Control`: `private, max-age=31536000`
+    /// - Errors:
+    ///   - 400 Bad Request: 無効な UUID 形式
+    ///   - 404 Not Found: 写真が存在しない
     @Sendable
     func download(req: Request) async throws -> Response {
         guard let idString = req.parameters.get("id"),
@@ -87,7 +117,18 @@ struct PhotoController: RouteCollection {
         return response
     }
 
-    /// POST /api/v1/photos - 写真アップロード
+    /// 写真アップロード
+    ///
+    /// - Endpoint: `POST /api/v1/photos`
+    /// - Content-Type: `multipart/form-data`
+    /// - Request Body:
+    ///   - `file`: 画像ファイル (JPEG, PNG, HEIC, WebP)
+    /// - Response: `PhotoUploadResponse` (200 OK)
+    /// - Errors:
+    ///   - 400 Bad Request: ファイルが無い、またはファイル読み取り失敗
+    ///   - 400 Bad Request: サポートされていないファイル形式
+    ///   - 400 Bad Request: ファイルサイズ超過 (最大 50MB)
+    ///   - 409 Conflict: 同一ファイルが既に存在 (SHA256 チェックサム重複)
     @Sendable
     func upload(req: Request) async throws -> PhotoUploadResponse {
         // multipart/form-data からファイルを取得
@@ -114,7 +155,16 @@ struct PhotoController: RouteCollection {
         return PhotoUploadResponse(photo: photo)
     }
 
-    /// DELETE /api/v1/photos/:id - 写真削除
+    /// 写真削除
+    ///
+    /// - Endpoint: `DELETE /api/v1/photos/:id`
+    /// - Path Parameters:
+    ///   - `id`: 写真の UUID
+    /// - Response: 204 No Content
+    /// - Errors:
+    ///   - 400 Bad Request: 無効な UUID 形式
+    ///   - 404 Not Found: 写真が存在しない
+    /// - Note: オリジナル画像、サムネイル、メタデータがすべて削除される
     @Sendable
     func delete(req: Request) async throws -> HTTPStatus {
         guard let idString = req.parameters.get("id"),
@@ -127,7 +177,19 @@ struct PhotoController: RouteCollection {
         return .noContent
     }
 
-    /// GET /api/v1/photos/:id/thumbnail - サムネイル取得
+    /// サムネイル取得
+    ///
+    /// - Endpoint: `GET /api/v1/photos/:id/thumbnail`
+    /// - Path Parameters:
+    ///   - `id`: 写真の UUID
+    /// - Response: サムネイル画像 (JPEG, 300px, 200 OK)
+    /// - Response Headers:
+    ///   - `Content-Type`: `image/jpeg`
+    ///   - `ETag`: チェックサム + `-thumb`
+    ///   - `Cache-Control`: `public, max-age=86400`
+    /// - Errors:
+    ///   - 400 Bad Request: 無効な UUID 形式
+    ///   - 404 Not Found: 写真が存在しない
     @Sendable
     func thumbnail(req: Request) async throws -> Response {
         guard let idString = req.parameters.get("id"),
