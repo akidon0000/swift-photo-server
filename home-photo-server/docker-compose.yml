@@ -33,7 +33,7 @@ services:
     ports:
       - '8080:8080'
     volumes:
-      - ${PHOTO_STORAGE_PATH:?PHOTO_STORAGE_PATH is required}:/app/data
+      - ${PHOTO_STORAGE_PATH:-./data}:/app/data
     depends_on:
       postgres:
         condition: service_healthy
